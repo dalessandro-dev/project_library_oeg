@@ -3,49 +3,57 @@ require_relative 'Library.rb'
 
 
 class Book < Library
+  def createBook
+    puts "\nDigite o título do livro: "
+    name = gets.chomp.strip.upcase
 
-  def createBook(title, author, publicationYear, available)
-    data = readFile
+    puts "\nDigite o nome do autor: "
+    author = gets.chomp.strip.upcase
 
-    newId = nextId(data["books"])
-
-    title = title.strip.upcase
-
-    author = author.strip.upcase
-
-    publicationYear = publicationYear.strip.upcase
-
+    puts "\nDigite o ano de publicação do livro: "
+    publicationYear = gets.chomp.strip
+    
 
 
-    if title.empty? || author.empty? || publicationYear.empty?
-      puts "Algum campo não foi preenchido!"
+    invalidBook "create", name, name, author, publicationYear
+
+
+    
+    puts "\nO livro está disponível? [s/n]"
+    available = gets.chomp.strip.downcase
+
+
+
+    if available == "s"
+      available = true
       
-      return
-    end 
-
-    if !publicationYear.match?(/\A-?\d+\z/) || publicationYear.strip.to_i > Time.now.year
-      puts "Data de publicação do livro inválida!"
-        
-      return
+    elsif available == "n"
+      available = false
+    
+    else
+      throw :error, "\nerro: Opção não válida!"
 
     end
 
-    data["books"].each { |e|
-
-    if e["name"] == title && e["book_author"] == author && e["book_publicationYear"] == publicationYear 
-      puts "Esse livro já foi cadastrado!"
 
 
-
-      return
-
-    end }
+    params = {"name" => name, "book_author" => author, "book_publicationYear" => publicationYear, "book_available" => available}
 
 
+
+    data = readFile
+
+
+
+    conferUserBook "book", data, params
+
+
+
+    newId = nextId(data["books"])
 
     book = {
       id: newId,
-      name: title,
+      name: name,
       book_author: author,
       book_publicationYear: publicationYear,
       book_available: available
@@ -59,7 +67,7 @@ class Book < Library
 
 
 
-    puts "Livro adicionado com sucesso!"
+    puts "\nLivro adicionado com sucesso!"
 
   end
 
@@ -67,126 +75,99 @@ class Book < Library
 
 
 
-  def updateBook obj, name = "", author = "", publicationYear = "", available = ""
-    if !available.is_a?(TrueClass) && !available.is_a?(FalseClass)
-      available = available.strip
+
+
+
+
+  
+  def updateBook
+    puts "\nDigite o título ou o ID do livro: "
+    search = gets.chomp.strip.upcase
+    
+    puts "\nDigite o título do livro ou apenas aperte ENTER se não desejar atualizar isso: "
+    name = gets.chomp.strip.upcase
+
+    puts "\nDigite o nome do autor do livro ou apenas aperte ENTER se não desejar atualizar isso: "
+    author = gets.chomp.strip.upcase
+
+    puts "\nDigite o ano de publicação do livro ou apenas aperte ENTER se não desejar atualizar isso: "
+    publicationYear = gets.chomp.strip.upcase
+    
+    puts "\nDigite 's' se o livro estiver disponível ou 'n' se não, ou apenas aperte ENTER se não desejar atualizar isso: [s/n]"
+    available = gets.chomp.strip
+
+
+
+    if available.downcase == "s"
+      available = true
+    
+    elsif available.downcase == "n"
+      available = false
+
+    elsif available != ""
+      throw :error, "\nerro: Opção não válida!"
 
     end
 
-    params = {"name" => name.upcase.strip, "book_author" => author.upcase.strip, "book_publicationYear" => publicationYear.strip, "book_available" => available}
+
+
+    invalidBook "update", search, name, author, publicationYear
+
+
+
+    params = {"name" => name, "book_author" => author, "book_publicationYear" => publicationYear, "book_available" => available}
+
+
+
+    AllEmptyFields params
+
+
 
     data = readFile
 
 
 
-    if !params.any? { |key, value| !value.empty?}
-      puts "Nenhum campo foi preenchido!"
-
-      return
-      
-    end
-
-    if !publicationYear.empty? && !publicationYear.match?(/\A-?\d+\z/) || publicationYear.strip.to_i > Time.now.year
-      puts "Data de publicação do livro inválida!"
-      
-
-
-      return
-
-    end
-
-    if !name.empty?
-      data["books"].each { |e|
-      
-      if e["name"] == params["name"] && e["book_author"] == params["book_author"] && params["book_publicationYear"] == publicationYear 
-        puts "Esse livro já foi cadastrado!"
-  
-
-
-        return
-
-      end }
-
-    end
-
+    conferUserBook "book", data, params
 
     
-    if obj.match?(/^[1-9]\d*$/)
-      value = data["books"].find { |e| e["id"] == obj.to_i }
-
-    elsif !obj.match?(/^[1-9]\d*$/) && !obj.empty?
-      value = data["books"].find { |e| e["name"].start_with?(obj.upcase) }
-
-    else
-      puts "Tipo de entrada não permitida!"
-      
-
-
-      return
-
-    end
-
-
-
-    if value.nil?
-      puts "Livro não encontrado!"
-
-
-
-      return
-
-    end
-
-
-
-    if value["book_available"]
-      availableBook = "Disponível"
-
-    else
-      availableBook = "Indisponível"
-
-    end  
     
-
-
-    msg = <<~MSG
-    =====================================================================
-    ID: #{value["id"]}
-    Título: #{value["name"]}
-    Autor: #{value["book_author"]}
-    Ano de publicação: #{value["book_publicationYear"]}
-    Disponibilidade: #{availableBook}
-    =====================================================================
-    Tem certeza que deseja atualizar o livro exibido? [s/n]
-    MSG
+    value = data["books"].select { |e| e["name"].start_with?(search) || e["id"] == search.to_i }
 
 
 
-    puts msg
-    response = gets.chomp
+    value = outputBookUser "book", value, "atualizar"
 
-    if response.downcase == "s"
+
+
+    response = gets.chomp.downcase
+
+    if response == "s"    
+      if data["loans"].any? { |e| value["id"] == e["book_id"] } && available
+        throw :error, "\nerro: Não foi possível atualizar, pois você tentou alterar a disponibilidade enquanto o livro estava emprestado!"
+
+      end
+
+
+
       params.each { |key, valueHash|
-      if (valueHash.is_a?(String) && !valueHash.empty?) || valueHash.is_a?(TrueClass) || valueHash.is_a?(FalseClass)
 
+      if (valueHash.is_a?(String) && !valueHash.empty?) || valueHash.is_a?(TrueClass) || valueHash.is_a?(FalseClass)
         value[key] = valueHash
 
-      end } 
+      end 
+    
+      } 
 
 
-      
+
       writeFile(data)
 
 
     
-      puts "Livro atualizado com sucesso!"
+      puts "\nLivro atualizado com sucesso!"
     
     else
-      puts "Operação encerrada!"
-
-
-
-      return
+      puts "\nOperação encerrada!"
 
     end
 

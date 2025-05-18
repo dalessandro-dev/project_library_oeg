@@ -3,49 +3,35 @@ require_relative 'Library.rb'
 
 
 class User < Library
+  def createUser
+    puts "\nDigite o nome do usuário: "
+    name = gets.chomp.strip.upcase
 
-  def createUser(name, email)
+    puts "\nDigite o e-mail do usuário: "
+    email = gets.chomp.strip
+
+
+
+    invalidUser "create", name, email
+
+
+    
+    params = {"name" => name, "user_email" => email}
+
+
+
     data = readFile
 
+
+
+    conferUserBook "user", data, params
+
+
+    
     newId = nextId(data["users"])
 
-    name = name.strip.upcase
 
-    email = email.strip
-
-
-
-    if name.empty? || email.empty?
-      puts "Nome ou e-mail do usuário não preenchido(s)! Tente novamente."
-        
-
-
-      return
-
-    end
-
-    if !email.match?(/\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i)
-      puts "E-mail inválido! Tente novamente."
-
-
-
-      return
-
-    end
-
-    data["users"].each { |e|
-
-      if e["name"] == name || e["user_email"] == email
-        puts "Esse usuário ou e-mail já foi cadastrado!"
-
-
-
-        return
-
-      end }
-
-
-
+    
     user = {
       id: newId,
       name: name,
@@ -60,7 +46,7 @@ class User < Library
 
 
 
-    puts "Usuário adicionado com sucesso!"
+    puts "\nUsuário adicionado com sucesso!"
 
   end
 
@@ -68,95 +54,58 @@ class User < Library
 
 
 
-  def updateUser obj, name = "" , email = ""
-    params = {"name" => name.strip.upcase, "user_email" => email.strip}
+
+
+
+  
+
+  def updateUser
+    puts "\nDigite o nome ou o ID do usuário: "
+    search = gets.chomp.strip.upcase
+              
+    puts "\nDigite o nome do usuário ou apenas aperte ENTER se não desejar atualizar isso: "
+    name = gets.chomp.strip.upcase
+          
+    puts "\nDigite o e-mail do usuário ou apenas aperte ENTER se não desejar atualizar isso: "
+    email = gets.chomp.strip
+
+
+
+    invalidUser "update", name, email, search
+    
+    
+
+    params = {"name" => name, "user_email" => email}
+
+
 
     data = readFile
 
-    obj = obj.strip
-
-
-
-    if name.empty? && email.empty?
-      puts "Nenhum campo foi preenchido! Tente novamente."
-
-
-
-      return
-
-    end
-
-    if !email.match?(/\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i) && !email.empty?
-      puts "E-mail inválido! Tente novamente."
-
-
-
-      return
-
-    end
-
-    data["users"].each { |e|
     
-    if e["user_email"] == email
-      puts "Esse e-mail já foi cadastrado!"
+
+    conferUserBook "user", data, params
 
 
 
-      return
+    value = data["users"].select { |e| e["id"] == search.to_i || e["name"].start_with?(search) }
+
+
+
+    value = outputBookUser "user", value, "atualizar"
+
+
     
-    end }
+    response = gets.chomp.downcase
 
-
-
-    if obj.match?(/^[1-9]\d*$/)
-      value = data["users"].find { |e| e["id"] == obj.to_i }
-
-    elsif !obj.match?(/^[1-9]\d*$/) && !obj.empty?
-      value = data["users"].find { |e| e["name"].start_with?(obj.upcase) }
-    
-    else
-      puts "Tipo de entrada não permitida! Tente novamente."
-
-
-
-      return
-
-    end
-
-
-
-    if value.nil?
-      puts "Usuário não encontrado! Tente novamente."
-
-
-
-      return
-
-    end
-
-
-
-    msg = <<~MSG
-    =====================================================================
-    ID: #{value["id"]}
-    Nome: #{value["name"]}
-    E-mail: #{value["user_email"]}
-    =====================================================================
-    Tem certeza que deseja atualizar o usuário exibido? [s/n]
-    MSG
-
-
-
-    puts msg
-    response = gets.chomp
-
-    if response.downcase == "s"
+    if response == "s"
       params.each { |key, valueHash|
 
       if (valueHash.is_a?(String) && !valueHash.empty?) || valueHash.is_a?(TrueClass) || valueHash.is_a?(FalseClass)
         value[key] = valueHash
 
-      end }
+      end 
+    
+      }
 
 
 
@@ -164,15 +113,14 @@ class User < Library
 
 
 
-      puts "Usuário atualizado com sucesso!"
+      puts "\nUsuário atualizado com sucesso!"
+    
+    elsif response == "n"
+      puts "\nOperação encerrada!"
     
     else
-      puts "Operação encerrada!"
+      throw :error, "\nerro: Opção não válida!"
 
-
-
-      return
-    
     end
 
   end
