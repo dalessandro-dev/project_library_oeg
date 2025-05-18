@@ -31,7 +31,7 @@ class Book < Library
       available = false
     
     else
-      throw :error, "\nerro: Opção não válida!"
+      throw :error, "\nerro: Opção inválida!"
 
     end
 
@@ -105,7 +105,7 @@ class Book < Library
       available = false
 
     elsif available != ""
-      throw :error, "\nerro: Opção não válida!"
+      throw :error, "\nerro: Opção inválida!"
 
     end
 

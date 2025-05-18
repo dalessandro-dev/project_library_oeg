@@ -68,7 +68,7 @@ class Library
               user.createUser
             
             else
-              throw :error, "\nerro: Opção não válida!"
+              throw :error, "\nerro: Opção inválida!"
 
             end
 
@@ -85,7 +85,7 @@ class Library
               findBookOrUser "user"
             
             else
-              throw :error, "\nerro: Opção não válida!"
+              throw :error, "\nerro: Opção inválida!"
 
             end
 
@@ -102,7 +102,7 @@ class Library
               user.updateUser
             
             else
-                throw :error, "\nerro: Opção não válida!"
+                throw :error, "\nerro: Opção inválida!"
 
             end
 
@@ -119,7 +119,7 @@ class Library
               delete "user"
 
             else
-              throw :error, "\nerro: Opção não válida!"
+              throw :error, "\nerro: Opção inválida!"
 
             end
 
@@ -137,7 +137,7 @@ class Library
             throw :exit_loop
           
           else
-            throw :error, "\nerro: Opção não válida!"
+            throw :error, "\nerro: Opção inválida!"
           
           end
         
@@ -159,7 +159,7 @@ class Library
           puts "\nSaindo..."
         
         else
-          puts "\nerro: Opção não válida!"
+          puts "\nerro: Opção inválida!"
 
         end
 
@@ -205,7 +205,7 @@ class Library
 
 
 
-    value_user = outputBookUser "user", user, "emprestar o livro para"
+    value_user = outputBookUser "user", user, "emprestar o livro"
 
 
 
@@ -254,7 +254,7 @@ class Library
         puts "\nOperação encerrada!"
 
       else
-        throw :error, "\nerro: Opção não válida!"
+        throw :error, "\nerro: Opção inválida!"
       
       end
     
@@ -327,7 +327,7 @@ class Library
       puts "\nOperação encerrada!"
 
     else
-      throw :error, "\nerro: Opção não válida!"
+      throw :error, "\nerro: Opção inválida!"
     
     end
 
@@ -492,7 +492,7 @@ class Library
       puts "\nOperação encerrada!"
     
     else
-      throw :error, "\nerro: Opção não válida!"
+      throw :error, "\nerro: Opção inválida!"
 
     end
 
@@ -671,7 +671,7 @@ class Library
       if value.length > 1
         msg = ""
 
-        value.each {|e|
+        value.each { |e|
 
         availableBook = e["book_available"] ? "Disponível" : "Indisponível"  
 
@@ -850,7 +850,7 @@ class Library
 
   def AllEmptyFields params 
 
-    if params.all? { |key, value| value.empty? }
+    if params.all? { |key, value| value == "" }
       throw :error, "\nerro: Nenhum campo foi preenchido!"
       
     end

@@ -75,7 +75,11 @@ class User < Library
     
     
 
-    params = {"name" => name, "user_email" => email}
+    params = { "name" => name, "user_email" => email }
+    
+
+
+    AllEmptyFields params
 
 
 
@@ -119,7 +123,7 @@ class User < Library
       puts "\nOperação encerrada!"
     
     else
-      throw :error, "\nerro: Opção não válida!"
+      throw :error, "\nerro: Opção inválida!"
 
     end
 
